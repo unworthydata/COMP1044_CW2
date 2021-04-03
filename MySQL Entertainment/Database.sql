@@ -1,4 +1,4 @@
-DROP IF EXISTS Entertainment;
+DROP DATABASE IF EXISTS Entertainment;
 CREATE DATABASE Entertainment;
 USE Entertainment;
 
@@ -147,8 +147,8 @@ CREATE TABLE staff(
 
 ALTER TABLE store
   ADD COLUMN manager_staff_id INT,
-  ADD CONSTRAINT store_staff_staff_id
-        FOREIGN KEY (staff_id) REFERENCES staff(staff_id)
+  ADD CONSTRAINT store_staff_manager_staff_id
+        FOREIGN KEY (manager_staff_id) REFERENCES staff(staff_id)
         ON UPDATE CASCADE
         ON DELETE RESTRICT;
 
@@ -157,14 +157,16 @@ CREATE TABLE inventory(
   film_id INTEGER,
   store_id INTEGER,
   last_update DATETIME,
-  ADD CONSTRAINT inventory_film_film_id
+  
+  CONSTRAINT inventory_film_film_id
         FOREIGN KEY (film_id) REFERENCES film(film_id)
         ON UPDATE CASCADE
         ON DELETE RESTRICT,
-  ADD CONSTRAINT inventory_store_store_id
+        
+  CONSTRAINT inventory_store_store_id
         FOREIGN KEY (store_id) REFERENCES store(store_id)
         ON UPDATE CASCADE
-        ON DELETE RESTRICT;
+        ON DELETE RESTRICT
 );
 
 CREATE TABLE customer(
@@ -177,14 +179,16 @@ CREATE TABLE customer(
   active BOOLEAN,
   create_date DATETIME,
   last_update DATETIME,
-  ADD CONSTRAINT customer_store_store_id
+  
+  CONSTRAINT customer_store_store_id
         FOREIGN KEY (store_id) REFERENCES store(store_id)
         ON UPDATE CASCADE
         ON DELETE RESTRICT,
-  ADD CONSTRAINT customer_address_address_id
+        
+  CONSTRAINT customer_address_address_id
         FOREIGN KEY (address_id) REFERENCES address(address_id)
         ON UPDATE CASCADE
-        ON DELETE RESTRICT;
+        ON DELETE RESTRICT
 );
 
 CREATE TABLE rental(
@@ -195,18 +199,21 @@ CREATE TABLE rental(
   return_date DATETIME,
   staff_id INTEGER,
   last_update DATETIME,
-  ADD CONSTRAINT rental_inventory_inventory_id
+  
+  CONSTRAINT rental_inventory_inventory_id
         FOREIGN KEY (inventory_id) REFERENCES inventory(inventory_id)
         ON UPDATE CASCADE
         ON DELETE RESTRICT,
-  ADD CONSTRAINT rental_customer_customer_id
+        
+  CONSTRAINT rental_customer_customer_id
         FOREIGN KEY (customer_id) REFERENCES customer(customer_id)
         ON UPDATE CASCADE
         ON DELETE RESTRICT,
-  ADD CONSTRAINT rental_staff_staff_id
+        
+  CONSTRAINT rental_staff_staff_id
         FOREIGN KEY (staff_id) REFERENCES staff(staff_id)
         ON UPDATE CASCADE
-        ON DELETE RESTRICT;
+        ON DELETE RESTRICT
 );
 
 CREATE TABLE payment(
@@ -217,16 +224,19 @@ CREATE TABLE payment(
   amount DECIMAL(10,2),
   payment_date DATETIME,
   last_update DATETIME,
-  ADD CONSTRAINT payment_customer_customer_id
+  
+  CONSTRAINT payment_customer_customer_id
         FOREIGN KEY (customer_id) REFERENCES customer(customer_id)
         ON UPDATE CASCADE
         ON DELETE RESTRICT,
-  ADD CONSTRAINT payment_staff_staff_id
+        
+  CONSTRAINT payment_staff_staff_id
         FOREIGN KEY (staff_id) REFERENCES staff(staff_id)
         ON UPDATE CASCADE
         ON DELETE RESTRICT,
-  ADD CONSTRAINT payment_rental_rental_id
+        
+  CONSTRAINT payment_rental_rental_id
         FOREIGN KEY (rental_id) REFERENCES rental(rental_id)
         ON UPDATE CASCADE
-        ON DELETE RESTRICT;
+        ON DELETE RESTRICT
 );
