@@ -2,6 +2,12 @@ DROP DATABASE IF EXISTS Entertainment;
 CREATE DATABASE Entertainment;
 USE Entertainment;
 
+-- work-around for the circular FK design in the database.
+-- 'store' references 'staff' and vice versa, so where do we insert first?
+-- "Chicken or the egg?" problem
+-- solution would be to change the database design, but this is a convenient patch
+SET FOREIGN_KEY_CHECKS = 0;
+
 CREATE TABLE actor(
   actor_id INTEGER PRIMARY KEY AUTO_INCREMENT,
   first_name VARCHAR(30),
@@ -55,7 +61,7 @@ CREATE TABLE film(
   film_id INTEGER PRIMARY KEY AUTO_INCREMENT,
   title VARCHAR(225),
   description VARCHAR(255),
-  release_year YEAR(4),
+  release_year YEAR,
   language_id INTEGER,
   original_language_id SMALLINT,
   rental_duration SMALLINT,
@@ -113,13 +119,20 @@ CREATE TABLE film_text(
 );
 
 CREATE TABLE store(
-  store_id INTEGER PRIMARY KEY AUTO_INCREMENT,
-  address_id INTEGER,
-  last_update DATETIME,
-  CONSTRAINT store_address_address_id
-      FOREIGN KEY (address_id) REFERENCES address(address_id)
-      ON UPDATE CASCADE
-      ON DELETE RESTRICT
+	store_id INTEGER PRIMARY KEY AUTO_INCREMENT,
+	manager_staff_id INT,
+	address_id INTEGER,
+	last_update DATETIME,
+	
+    CONSTRAINT store_address_address_id
+		FOREIGN KEY (address_id) REFERENCES address(address_id)
+		ON UPDATE CASCADE
+		ON DELETE RESTRICT,
+      
+	CONSTRAINT store_staff_manager_staff_id
+		FOREIGN KEY (manager_staff_id) REFERENCES staff(staff_id)
+		ON UPDATE CASCADE
+		ON DELETE RESTRICT
 );
 
 CREATE TABLE staff(
@@ -144,13 +157,6 @@ CREATE TABLE staff(
       ON UPDATE CASCADE
       ON DELETE RESTRICT
 );
-
-ALTER TABLE store
-  ADD COLUMN manager_staff_id INT,
-  ADD CONSTRAINT store_staff_manager_staff_id
-        FOREIGN KEY (manager_staff_id) REFERENCES staff(staff_id)
-        ON UPDATE CASCADE
-        ON DELETE RESTRICT;
 
 CREATE TABLE inventory(
   inventory_id INTEGER PRIMARY KEY AUTO_INCREMENT,
