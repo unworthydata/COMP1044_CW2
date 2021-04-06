@@ -1,0 +1,7 @@
+rental_rate and rental_duration are actually part of film since they describe the price of a title and the rental duration allowed for a title (Latest Marvel movie may be more in demand than "Mission Impossible 235: Electric Boogalo") so we will not move them
+
+Flattened special_features column in Film table so it fits 3NF.
+
+fixed the circular foreign key design in store-staff relationship by introducing a Store_staff link table
+
+update film table using a query: (insert picture or text)
