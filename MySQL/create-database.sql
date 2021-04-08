@@ -2,8 +2,6 @@ DROP DATABASE IF EXISTS Entertainment;
 CREATE DATABASE Entertainment;
 USE Entertainment;
 
-SET FOREIGN_KEY_CHECKS = 0;
-
 CREATE TABLE actor (
   actor_id INTEGER PRIMARY KEY AUTO_INCREMENT,
   first_name VARCHAR(30) NOT NULL,
