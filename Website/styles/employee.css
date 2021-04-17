@@ -1,0 +1,21 @@
+table {
+  border-collapse: collapse;
+  border-width: 0px;
+  width: 35%;
+}
+
+thead {
+  background-color: darkgrey;
+  color: black;
+  font-size: 17px;
+  font-weight: bold;
+  text-align: center;
+}
+
+tr:nth-child(even) {
+  background-color: darkgrey;
+}
+
+td {
+  text-align: center;
+}
