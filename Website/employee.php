@@ -10,6 +10,11 @@
     <link rel="stylesheet" href="styles/employee.css" />
   </head>
   <body>
+  <div class="nav">
+      <div class="link">Employee Area</div>
+      <div class="link">Group 28</div>
+    </div>
+  
     <h1>Employee Portal</h1>
     <div class="tableSelection">
       <label for="tables">Choose a table:</label>
