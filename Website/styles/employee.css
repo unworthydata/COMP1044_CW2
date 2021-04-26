@@ -1,48 +1,38 @@
 table {
-  border-collapse: collapse;
-  border-width: 0px;
-  width: 35%;
+  width: 100vw;
 }
 
-thead {
-  background-color: darkgrey;
-  color: black;
-  font-size: 17px;
-  font-weight: bold;
-  text-align: center;
+td,
+th {
+  padding-left: 30px;
+  padding-right: 30px;
 }
 
-tr:nth-child(even) {
-  background-color: darkgrey;
+input[type="text"] {
+  width: 200px;
 }
 
-td {
-  text-align: center;
+.list {
+  width: 200px;
 }
 
-.nav {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+.operationList,
+input[type="number"] {
+  width: 65px;
+  display: inline-block;
+}
+
+.icon {
+  width: 1.5%;
+  margin: 0px 10px;
+}
+
+.numericQueryHeader {
+  width: 11%;
+}
+
+#separator {
   background-color: black;
-  padding: 10px;
-}
-
-.link {
-  margin: 10px;
-  font-size: 2rem;
-  color: white;
-  font-size: 1.8rem;
-}
-
-@media screen and (min-width: 768px) {
-  .nav {
-    align-items: center;
-    flex-direction: row;
-    justify-content: flex-end;
-  }
-
-  .link {
-    margin: 20px;
-  }
+  max-width: 100vw;
+  height: 1px;
 }
