@@ -113,98 +113,6 @@ if (isset($_GET['sortType'])) {
 
   <div id="separator"></div>
 
-  <!-- example table -->
-  <table>
-    <thead>
-      <form action="employee.php" method="GET">
-        <?php
-        foreach ($columnNames as $column) {
-          if ($column['Type'] == 'varchar(30)' or $column['Type'] == 'varchar(50)' or $column['Type'] == 'varchar(100)')  //if we're storing strings any other way add them here
-            echo "<th> <input type='text' placeholder= $column[Field] id='name'> </th>";
-          elseif ($column['Type'] == 'tinyint(1)')  //this is how we're storing booleans
-            echo "<th> <div class='checkbox'> <input type='checkbox' id='manager'> </div> </th>";
-          else
-            echo "<th class='numericQueryHeader'>
-            <select class='operationList' name='operations'>
-              <option value='equal'>==</option>
-              <option value='notEqual'>&#8800;</option>
-              <option value='lessThan'>&lt;</option>
-              <option value='greaterThan'>&gt;</option>
-              <option value='lessThanOrEq'>&le;</option>
-              <option value='greaterThanOrEq'>&ge;</option>
-            </select>
-            <input class='numberField' type='number' placeholder= $column[Field] id='age'> </th>";
-        }
-
-        ?>
-
-        <th>
-          <button type="reset">Clear</button>
-          <button type="submit">Start query</button>
-        </th>
-      </form>
-    </thead>
-    <thead>
-      <th>Name</th>
-      <th>Manager?</th>
-      <th>Age</th>
-      <th></th>
-    </thead>
-
-    <tbody>
-      <tr>
-        <td>Tywin Lannister</td>
-        <td>Yes</td>
-        <td>50</td>
-        <td>
-          <a href=""><img src="images/delete_icon.png" alt="delete_icon" class="icon"></a>
-          <a href=""><img src="images/edit_icon.jpg" alt="edit_icon" class="icon"></a>
-        </td>
-      </tr>
-      <tr>
-        <td>Robert Langdon</td>
-        <td>Yes</td>
-        <td>36</td>
-        <td>
-          <a href=""><img src="images/delete_icon.png" alt="delete_icon" class="icon"></a>
-          <a href=""><img src="images/edit_icon.jpg" alt="edit_icon" class="icon"></a>
-        </td>
-      </tr>
-      <tr>
-        <td>Robb Stark</td>
-        <td>No</td>
-        <td>23</td>
-        <td>
-          <a href=""><img src="images/delete_icon.png" alt="delete_icon" class="icon"></a>
-          <a href=""><img src="images/edit_icon.jpg" alt="edit_icon" class="icon"></a>
-        </td>
-      </tr>
-    </tbody>
-
-    <tfoot>
-      <tr>
-        <?php
-        foreach ($columnNames as $column) {
-          if ($column['Type'] == 'varchar(30)' or $column['Type'] == 'varchar(50)' or $column['Type'] == 'varchar(100)') { //if we're storing strings any other way add them here
-            echo "<td> <input type='text' placeholder= $column[Field] id='mame'> </td>";
-          } elseif ($column['Type'] == 'tinyint(1)') { //this is how we're storing booleans
-            echo "<td> <div class='checkbox'> <input type='checkbox' id='manager'> </div> </td>";
-          } else {
-            echo "<td> <input class='numberField' type='number' placeholder= $column[Field] id='age'> </td>";
-          }
-        }
-
-        ?>
-        <td><button type="submit">Insert record</button></td>
-      </tr>
-    </tfoot>
-  </table>
-
-  <div id="separator"></div>
-
-  <!-- table with functionality outline -->
-  <!-- note that it is wrapped with a hidden div, remove that div tag before and after table so you can see it-->
-
   <table>
     <!-- for querying -->
     <thead>
@@ -357,6 +265,7 @@ if (isset($_GET['sortType'])) {
       </tr>
     </tfoot>
   </table>
+
 </body>
 
 <!-- notice that there are some repeated parts and there is
