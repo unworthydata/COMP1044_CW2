@@ -16,23 +16,38 @@
     <fieldset>
       <label for="tableSelect">Select a table</label>
       <select class="list" name="tables" id="tableList">
-        <?php
-        // get the table names in a foreach loop (Use query 'SHOW TABLES')
-        // something like " foreach table "
-        // for example and testing I set $table to Film
-        $table = 'Film';
-        echo "<option value=$table>$table</option>";
+        <?php //we're gonna connect to the database first to fetch stuff (we're connecting locally but when we got everything finalised and working we have to change this to the server)
+       $conn = mysqli_connect('localhost', 'test', 'test123', 'entertainment'); //host, username, password, databasename
+        if (!$conn) { //if the connection has failed (is false):
+          echo 'Connection Error:' . mysqli_connect_error(); //concatenates the source of the error to the end of the echo
+        }
+        $query = ('SHOW TABLES FROM entertainment');
+        $result = mysqli_query($conn, $query);
+        $tablenames = mysqli_fetch_all($result, MYSQLI_ASSOC); //fetches a list of tables in database 'entertainment'
+        mysqli_close($conn);
+        mysqli_free_result($result);
+        foreach ($tablenames as $table){
+        echo "<option value=$table[Tables_in_entertainment]>$table[Tables_in_entertainment]</option>";
+      }
         ?>
       </select>
 
       <label for="sortSelect">Sort by</label>
       <select class="list" name="columns" id="columnList">
         <?php
-        // get the table names in a foreach loop (Use query 'SHOW COLUMNS FROM $table')
-        // something like " foreach column in table "
-        // for example and testing I set $column to film_id
-        $column = 'film_id';
-        echo "<option value=$column>$column</option>";
+        // get the table names in a foreach loop (Use query 'SHOW COLUMNS FROM $table') (i think you meant column names so imma do that)
+        $conn = mysqli_connect('localhost', 'test', 'test123', 'entertainment'); // we have to change this to the server
+         if (!$conn) {
+           echo 'Connection Error:' . mysqli_connect_error();
+         }
+         $query = ('SHOW COLUMNS FROM Customer'); //i don't know what variable you have to store the user's choice of table so using Customer as a placeholder for the sake of testing (it has a boolean columnname)
+         $result = mysqli_query($conn, $query);
+         $columnnames = mysqli_fetch_all($result, MYSQLI_ASSOC);
+         mysqli_close($conn);
+         mysqli_free_result($result);
+         foreach($columnnames as $column){
+           echo "<option value=$column[Field]>$column[Field]</option>";
+         }
         ?>
       </select>
       <select class="list" name="sort" id="sortList">
@@ -48,25 +63,25 @@
   <table>
     <thead>
       <?php
+      foreach($columnnames as $column){
+        if ($column['Type'] == 'varchar(30)' or $column['Type'] == 'varchar(50)' or $column['Type'] == 'varchar(100)'){ //if we're storing strings any other way add them here
+          echo "<th> <input type='text' placeholder= $column[Field] id='mame'> </th>";
+        } elseif ($column['Type'] == 'tinyint(1)'){ //this is how we're storing booleans
+          echo "<th> <div class='checkbox'> <input type='checkbox' id='manager'> </div> </th>";
+        } else{
+          echo "<th class='numericQueryHeader'>
+            <select class='operationList' name='operations'>
+              <option value='equal'>==</option>
+              <option value='notEqual'>&#8800;</option>
+              <option value='lessThan'>&lt;</option>
+              <option value='greaterThan'>&gt;</option>
+              <option value='lessThanOrEq'>&le;</option>
+              <option value='greaterThanOrEq'>&ge;</option>
+            </select>
+            <input class='numberField' type='number' placeholder= $column[Field] id='age'> </th>";
+          }
+        }
 
-      // foreach column
-      // if text column then
-      echo "<th> <input type='text' placeholder='Name' id='mame'> </th>";
-
-      // else if boolean
-      echo "<th> <div class='checkbox'> <input type='checkbox' id='manager'> </div> </th>";
-
-      // else 
-      echo "<th class='numericQueryHeader'>
-        <select class='operationList' name='operations'>
-          <option value='equal'>==</option>
-          <option value='notEqual'>&#8800;</option>
-          <option value='lessThan'>&lt;</option>
-          <option value='greaterThan'>&gt;</option>
-          <option value='lessThanOrEq'>&le;</option>
-          <option value='greaterThanOrEq'>&ge;</option>
-        </select>
-        <input class='numberField' type='number' placeholder='Age' id='age'> </th>";
       ?>
 
       <th>
@@ -115,16 +130,18 @@
     <tfoot>
       <tr>
         <?php
+        foreach($columnnames as $column){
+          if ($column['Type'] == 'varchar(30)' or $column['Type'] == 'varchar(50)' or $column['Type'] == 'varchar(100)'){ //if we're storing strings any other way add them here
+            echo "<td> <input type='text' placeholder= $column[Field] id='mame'> </td>";
 
-        // foreach column
-        // if text column then
-        echo "<td> <input type='text' placeholder='Name' id='mame'> </td>";
+          } elseif ($column['Type'] == 'tinyint(1)'){ //this is how we're storing booleans
+            echo "<td> <div class='checkbox'> <input type='checkbox' id='manager'> </div> </td>";
 
-        // else if boolean
-        echo "<td> <div class='checkbox'> <input type='checkbox' id='manager'> </div> </td>";
+          } else{
+            echo "<td> <input class='numberField' type='number' placeholder= $column[Field] id='age'> </td>";
+          }
+        }
 
-        // else 
-        echo "<td> <input class='numberField' type='number' placeholder='Age' id='age'> </td>";
         ?>
         <td><button type="submit">Insert record</button></td>
       </tr>
@@ -133,27 +150,32 @@
 
   <!-- table with functionality outline -->
   <!-- note that it is wrapped with a hidden div, remove that div tag before and after table so you can see it-->
-  <div hidden>
+
     <table>
       <!-- for querying -->
       <thead>
         <?php
-        // foreach column
-        // if text column then
-        echo "<th> <input type='text' placeholder=$column id=$column> </th>";
-        // else if boolean
-        echo "<th> <div class='checkbox'> <input type='checkbox' id=$column> </div> </th>";
-        // else
-        echo "<th class='numericQueryHeader'>
-          <select class='operationList' name='operations'>
-            <option value='equal'>==</option>
-            <option value='notEqual'>&#8800;</option>
-            <option value='lessThan'>&lt;</option>
-            <option value='greaterThan'>&gt;</option>
-            <option value='lessThanOrEq'>&le;</option>
-            <option value='greaterThanOrEq'>&ge;</option>
-          </select>
-          <input class='numberField' type='number' placeholder=$column id=$column> </th>";
+        foreach($columnnames as $column){
+          if ($column['Type'] == 'varchar(30)' or $column['Type'] == 'varchar(50)' or $column['Type'] == 'varchar(100)'){ //if we're storing strings any other way add them here
+            echo "<th> <input type='text' placeholder=$column[Field] id=$column[Field]> </th>";
+
+          } elseif ($column['Type'] == 'tinyint(1)'){ //this is how we're storing booleans
+            echo "<th> <div class='checkbox'> <input type='checkbox' id=$column[Field]> </div> </th>";
+
+          } else{
+            echo "<th class='numericQueryHeader'>
+              <select class='operationList' name='operations'>
+                <option value='equal'>==</option>
+                <option value='notEqual'>&#8800;</option>
+                <option value='lessThan'>&lt;</option>
+                <option value='greaterThan'>&gt;</option>
+                <option value='lessThanOrEq'>&le;</option>
+                <option value='greaterThanOrEq'>&ge;</option>
+              </select>
+              <input class='numberField' type='number' placeholder=$column[Field] id=$column[Field]> </th>";
+          }
+        }
+
         ?>
         <th>
           <button type="reset">Clear</button>
@@ -164,57 +186,70 @@
       <!-- for headers/column names -->
       <thead>
         <?php
-        // get the table names in a foreach loop (Use query 'SHOW COLUMNS FROM $table')
-        // something like " foreach ($fetch as $table) "
-
-        // foreach entry 
+        foreach ($columnnames as $column){
         echo "<th>";
-        // foreach column/attribute in an entry
-        echo  "<td>$columnName</td>";
-
+        echo  "<td>$column[Field]</td>";
         echo "</th>";
+      }
         ?>
       </thead>
 
       <tbody>
+
         <!-- for actual entries -->
         <?php
-        // foreach entry 
-        echo "<tr>";
-        // foreach column/attribute in an entry
-        echo  "<td>$attributeValue</td>";
-        echo  "<td>
+        $conn = mysqli_connect('localhost', 'test', 'test123', 'entertainment'); //needs to be updated to the server
+        if (!$conn) {
+          echo 'Connection Error:' . mysqli_connect_error();
+        }
+
+        $query = ('SELECT * FROM Customer'); //Customer here is a placeholder
+        $result = mysqli_query($conn, $query);
+        $fetch = mysqli_fetch_all($result, MYSQLI_ASSOC);
+        // foreach entry
+        foreach ($fetch as $entry){
+          ?> <tr> <?php
+          foreach ($columnnames as $column){
+            ?><td><?php
+              echo $fetch[json_encode($column['Field'])]; //for whatever reason it says that the index name is undefined even though it's meant to work??? have done literally everything i can to try and fix this and nothing works
+            ?></td> <?php
+          }
+        }?>
+                <td>
                 <a href=''><img src='images/delete_icon.png' alt='delete_icon' class='icon'></a>
                 <a href=''><img src='images/edit_icon.jpg' alt='edit_icon' class='icon'></a>
-               </td>";
-        echo  "</tr>";
-        ?>
+               </td>
+          </tr>
+
       </tbody>
 
       <tfoot>
         <tr>
           <?php
+          foreach ($columnnames as $column){
+            if ($column['Type'] == 'varchar(30)' or $column['Type'] == 'varchar(50)' or $column['Type'] == 'varchar(100)'){ //if we're storing strings any other way add them here
+              echo "<td> <input type='text' placeholder= $column[Field] id= $column[Field]> </td>";
 
-          // foreach column
-          // if text column then
-          echo "<td> <input type='text' placeholder='Name' id='mame'> </td>";
+            } elseif ($column['Type'] == 'tinyint(1)'){ //this is how we're storing booleans
+              echo "<td> <div class='checkbox'> <input type='checkbox' id= $column[Field]> </div> </td>";
 
-          // else if boolean
-          echo "<td> <div class='checkbox'> <input type='checkbox' id='manager'> </div> </td>";
+            } else{
+              echo "<td> <input class='numberField' type='number' placeholder= $column[Field] id= $column[Field]> </td>";
 
-          // else 
-          echo "<td> <input class='numberField' type='number' placeholder='Age' id='age'> </td>";
+            }
+          }
+
           ?>
           <td><button type="submit">Insert record</button></td>
         </tr>
       </tfoot>
     </table>
-  </div>
+
 
 </body>
 
-<!-- notice that there are some repeated parts and there is 
-probably a way to extract that into some sort of function 
+<!-- notice that there are some repeated parts and there is
+probably a way to extract that into some sort of function
 in php (possibly into another php file and then #include at the top) -->
 
 </html>
