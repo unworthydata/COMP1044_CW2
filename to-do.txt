@@ -1,0 +1,10 @@
+-> get sortby column and sortType		DONE
+-> get query values				DONE
+-> get the table to display			DONE
+-> insert new record funtion
+-> edit record function
+-> delete record function
+-> make table queries apply on-screen
+-> styling
+-> testing
+-> video
