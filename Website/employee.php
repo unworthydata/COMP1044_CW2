@@ -7,13 +7,7 @@
 // $column holds the column name
 // so if the sortType is set, then the user wants to sort
 
-if (isset($_GET['sortType'])) {
-  // then sort
-}
-
-
-
-?>
+  ?>
 
 <head>
   <meta charset="UTF-8">
@@ -112,7 +106,8 @@ if (isset($_GET['sortType'])) {
   </form>
 
   <div id="separator"></div>
-
+  <?php
+if (isset($_GET['tables'])){ ?>
   <table>
     <!-- for querying -->
     <thead>
@@ -219,6 +214,23 @@ if (isset($_GET['sortType'])) {
       else
         $result = mysqli_query($conn, "SELECT * FROM $table");
 
+//this is where im going to put the sort stuff since all of it is gonna be concatenated to the end of the query
+      if (isset($_GET['sortType'])) {
+          $conn = mysqli_connect('localhost', 'root', '', 'entertainment'); //host, username, password, databasename
+          if (!$conn)  //if the connection has failed (is false):
+            echo 'Connection Error:' . mysqli_connect_error();
+
+          $query = "SELECT * FROM $table ORDER BY $_GET[column] "; //we're going to get rid of this line once we get the query working
+
+          if ($_GET['sortType'] == "Ascending")
+            $query .= "ASC";
+          else
+            $query .= "DESC";
+          echo ($query); //just gonna display the query one last time
+        }
+
+
+      $result = mysqli_query($conn, $query);
       $fetch = mysqli_fetch_all($result, MYSQLI_ASSOC);
       $columnsResult = mysqli_query($conn, "SHOW COLUMNS FROM $table");
       $columnNames = mysqli_fetch_all($columnsResult, MYSQLI_ASSOC);
@@ -265,7 +277,7 @@ if (isset($_GET['sortType'])) {
       </tr>
     </tfoot>
   </table>
-
+<?php } ?>
 </body>
 
 <!-- notice that there are some repeated parts and there is
