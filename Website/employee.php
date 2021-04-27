@@ -69,7 +69,7 @@ if (isset($_GET['sortType'])) {
         $table = $_GET['tables'];
         $query = ("SHOW COLUMNS FROM $table");
         $result = mysqli_query($conn, $query);
-        $columnnames = mysqli_fetch_all($result, MYSQLI_ASSOC);
+        $columnNames = mysqli_fetch_all($result, MYSQLI_ASSOC);
 
         mysqli_close($conn);
         mysqli_free_result($result);
@@ -81,7 +81,7 @@ if (isset($_GET['sortType'])) {
         else
           echo "<option value='' disabled selected>Select your option</option>";
 
-        foreach ($columnnames as $column)
+        foreach ($columnNames as $column)
           echo "<option value=$column[Field]>$column[Field]</option>";
         ?>
       </select>
@@ -118,7 +118,7 @@ if (isset($_GET['sortType'])) {
     <thead>
       <form action="employee.php" method="GET">
         <?php
-        foreach ($columnnames as $column) {
+        foreach ($columnNames as $column) {
           if ($column['Type'] == 'varchar(30)' or $column['Type'] == 'varchar(50)' or $column['Type'] == 'varchar(100)')  //if we're storing strings any other way add them here
             echo "<th> <input type='text' placeholder= $column[Field] id='name'> </th>";
           elseif ($column['Type'] == 'tinyint(1)')  //this is how we're storing booleans
@@ -184,7 +184,7 @@ if (isset($_GET['sortType'])) {
     <tfoot>
       <tr>
         <?php
-        foreach ($columnnames as $column) {
+        foreach ($columnNames as $column) {
           if ($column['Type'] == 'varchar(30)' or $column['Type'] == 'varchar(50)' or $column['Type'] == 'varchar(100)') { //if we're storing strings any other way add them here
             echo "<td> <input type='text' placeholder= $column[Field] id='mame'> </td>";
           } elseif ($column['Type'] == 'tinyint(1)') { //this is how we're storing booleans
@@ -200,6 +200,8 @@ if (isset($_GET['sortType'])) {
     </tfoot>
   </table>
 
+  <div id="separator"></div>
+
   <!-- table with functionality outline -->
   <!-- note that it is wrapped with a hidden div, remove that div tag before and after table so you can see it-->
 
@@ -208,7 +210,7 @@ if (isset($_GET['sortType'])) {
     <thead>
       <form action="employee.php" method="GET">
         <?php
-        foreach ($columnnames as $column) {
+        foreach ($columnNames as $column) {
           if ($column['Type'] == 'varchar(30)' or $column['Type'] == 'varchar(50)' or $column['Type'] == 'varchar(100)')
             // the code says that a query entry would be labelled as columnName_condition, for example film_id_condition
             echo "<th> <input type='text' placeholder='$column[Field]' name='$column[Field]_condition'> </th>";
@@ -241,7 +243,7 @@ if (isset($_GET['sortType'])) {
         // if the query button was clicked, go through all the columns and build a query (for example I used a text/VARCHAR column)
         if (isset($_GET['query'])) {
           $query = "SELECT * FROM $table WHERE ";
-          foreach ($columnnames as $column) {
+          foreach ($columnNames as $column) {
             if (isset($_GET["$column[Field]_condition"])) {
               if ($column['Type'] == 'varchar(30)' or $column['Type'] == 'varchar(50)' or $column['Type'] == 'varchar(100)')
                 $query = $query . $column['Field'] . " LIKE " . $_GET["$column[Field]_condition"] . " AND ";
@@ -290,7 +292,7 @@ if (isset($_GET['sortType'])) {
     <!-- for headers/column names -->
     <thead>
       <?php
-      foreach ($columnnames as $column)
+      foreach ($columnNames as $column)
         echo "<th>$column[Field]</th>";
       ?>
     </thead>
@@ -304,16 +306,32 @@ if (isset($_GET['sortType'])) {
         echo 'Connection Error:' . mysqli_connect_error();
       }
 
-      $query = ("SELECT * FROM $table");
-      $result = mysqli_query($conn, $query);
+      if (isset($_GET['query']))
+        $result = mysqli_query($conn, $query);
+      else
+        $result = mysqli_query($conn, "SELECT * FROM $table");
+
       $fetch = mysqli_fetch_all($result, MYSQLI_ASSOC);
+      $columnsResult = mysqli_query($conn, "SHOW COLUMNS FROM $table");
+      $columnNames = mysqli_fetch_all($columnsResult, MYSQLI_ASSOC);
 
       // foreach entry
       foreach ($fetch as $entry) {
         echo "<tr>";
 
-        echo "</tr>";
+        foreach ($columnNames as $column) {
+          echo "<td>" . htmlspecialchars($entry[$column['Field']]) . "</td>";
+        }
+
+        echo "<td>
+                <a href=''><img src='images/delete_icon.png' alt='delete_icon' class='icon'></a>
+                <a href=''><img src='images/edit_icon.jpg' alt='edit_icon' class='icon'></a>
+              </td>
+            </tr>";
       }
+
+      mysqli_free_result($result);
+      mysqli_close($conn);
       ?>
 
     </tbody>
@@ -323,7 +341,7 @@ if (isset($_GET['sortType'])) {
         <form action="employee.php" method="POST">
           <?php
 
-          foreach ($columnnames as $column) {
+          foreach ($columnNames as $column) {
             if ($column['Type'] == 'varchar(30)' or $column['Type'] == 'varchar(50)' or $column['Type'] == 'varchar(100)')  //if we're storing strings any other way add them here
               echo "<td> <input type='text' placeholder='$column[Field]' id='$column[Field]'> </td>";
             elseif ($column['Type'] == 'tinyint(1)')  //this is how we're storing booleans
