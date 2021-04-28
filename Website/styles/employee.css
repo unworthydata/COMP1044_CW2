@@ -4,8 +4,10 @@ table {
 
 td,
 th {
-  padding-left: 30px;
+  padding-top: 10px;
   padding-right: 30px;
+  padding-bottom: 10px;
+  padding-left: 30px;
 }
 
 input[type="text"] {
@@ -25,6 +27,12 @@ input[type="number"] {
 .icon {
   width: 2rem;
   margin: 0px 10px;
+}
+
+#iconForm {
+  display: inline-block;
+  margin: 0;
+  padding: 0;
 }
 
 .numericQueryHeader {

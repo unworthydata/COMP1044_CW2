@@ -1,13 +1,27 @@
+<?php
+session_start();
+include 'inputFields.php';
+include 'connection.php';
+include 'queryBuilder.php';
+
+if (isset($_GET['table']))
+  $_SESSION['table'] = $_GET['table'];
+
+if (isset($_GET['sortColumn']))
+  $_SESSION['sortColumn'] = $_GET['sortColumn'];
+
+if (isset($_GET['sortType']))
+  $_SESSION['sortType'] = $_GET['sortType'];
+
+if (isset($_POST['delete']))
+  $_SESSION['delete'] = $_POST['delete'];
+
+if (isset($_POST['update']))
+  echo "update message";
+?>
+
 <!DOCTYPE html>
 <html lang="en">
-
-<?php
-
-// $sortType holds either "Ascending" or "Descnding" (you can do if ($sortType == "Ascending") then sort ascending else sort descending)
-// $column holds the column name
-// so if the sortType is set, then the user wants to sort
-
-  ?>
 
 <head>
   <meta charset="UTF-8">
@@ -24,23 +38,14 @@
     <fieldset>
 
       <label for="tableSelect">Select a table</label>
-      <select class="list" name="tables" id="tableSelect" onchange="submit();">
-        <?php //we're gonna connect to the database first to fetch stuff (we're connecting locally but when we got everything finalised and working we have to change this to the server)
-        $conn = mysqli_connect('localhost', 'root', '', 'entertainment'); //host, username, password, databasename
-        if (!$conn)  //if the connection has failed (is false):
-          echo 'Connection Error:' . mysqli_connect_error(); //concatenates the source of the error to the end of the echo
+      <select class="list" name="table" id="tableSelect" onchange="submit();">
+        <?php
 
-        $query = ('SHOW TABLES FROM entertainment');
-        $result = mysqli_query($conn, $query);
-        $tablenames = mysqli_fetch_all($result, MYSQLI_ASSOC); //fetches a list of tables in database 'entertainment'
+        $result = mysqli_query($conn, "SHOW TABLES FROM $database");
+        $tablenames = mysqli_fetch_all($result, MYSQLI_ASSOC);
 
-        mysqli_close($conn);
-        mysqli_free_result($result);
-
-        // this is to say "if this field is set (i.e. the user already selected a value),
-        // set that value as the display value in the list), otherwiwse display placeholder value
-        if (isset($_GET['tables']))
-          echo "<option value=$_GET[tables]>$_GET[tables]</option>";
+        if (isset($_SESSION['table']))
+          echo "<option value=$_SESSION[table]>$_SESSION[table]</option>";
         else
           echo "<option value='' disabled selected>Select your option</option>";
 
@@ -52,26 +57,14 @@
       </select>
 
       <label for="columnList">Sort by</label>
-      <select class="list" name="column" id="columnList">
+      <select class="list" name="sortColumn" id="columnList">
         <?php
-        // get the table names in a foreach loop (Use query 'SHOW column FROM $table') (i think you meant column names so imma do that)
-        $conn = mysqli_connect('localhost', 'root', '', 'entertainment'); // we have to change this to the server
-        if (!$conn)
-          echo 'Connection Error:' . mysqli_connect_error();
 
-
-        $table = $_GET['tables'];
-        $query = ("SHOW COLUMNS FROM $table");
-        $result = mysqli_query($conn, $query);
+        $result = mysqli_query($conn, "SHOW COLUMNS FROM $_SESSION[table]");
         $columnNames = mysqli_fetch_all($result, MYSQLI_ASSOC);
 
-        mysqli_close($conn);
-        mysqli_free_result($result);
-
-        // this is to say "if this field is set (the user already selected a value),
-        // keep that value as the display value in the list)
-        if (isset($_GET['column']))
-          echo "<option value=$_GET[column]>$_GET[column]</option>";
+        if (isset($_SESSION['sortColumn']))
+          echo "<option value=$_SESSION[sortColumn]>$_SESSION[sortColumn]</option>";
         else
           echo "<option value='' disabled selected>Select your option</option>";
 
@@ -82,203 +75,164 @@
 
       <select class="list" name="sortType">
         <?php
-        // this is to say "if this field is set (the user already selected a value),
-        // keep that value as the display value in the list)
-        if (isset($_GET['sortType'])) {
-          $sortType = $_GET['sortType'];
+
+        if (isset($_SESSION['sortType'])) {
+          $sortType = $_SESSION['sortType'];
           echo "<option value=$sortType>$sortType</option>";
 
           if ($sortType == 'Ascending')
             echo "<option value='Descending'>Descending</option>";
           else
             echo "<option value='Ascending'>Ascending</option>";
-        } else {
+        } else
           echo "<option value='Ascending'>Ascending</option>
                 <option value='Descending'>Descending</option>";
-        }
-
         ?>
       </select>
-
       <input type="submit" value="Go">
+
+      <div>
+        <a class="button" href="#bottom" id="insertRef">Insert a new entry</a>
+      </div>
 
     </fieldset>
   </form>
 
   <div id="separator"></div>
   <?php
-if (isset($_GET['tables'])){ ?>
-  <table>
-    <!-- for querying -->
-    <thead>
-      <form action="employee.php" method="GET">
+  if (isset($_SESSION['table'])) { ?>
+    <table>
+      <!-- for querying -->
+      <thead>
+        <form action="employee.php" method="GET">
+          <?php
+          foreach ($columnNames as $column)
+            queryInputs($column);
+          ?>
+          <th>
+            <button name="query" type="submit" value="query">Query</button>
+            <button name="clear" type="reset" value="clear" class="button button-outline">Clear</button>
+          </th>
+
+          <?php
+          if (isset($_GET['query']))
+            $condition = buildQuery($columnNames, $_GET);
+          ?>
+        </form>
+      </thead>
+
+      <!-- for headers/column names -->
+      <thead>
         <?php
-        foreach ($columnNames as $column) {
-          if ($column['Type'] == 'varchar(30)' or $column['Type'] == 'varchar(50)' or $column['Type'] == 'varchar(100)')
-            // the code says that a query entry would be labelled as columnName_condition, for example film_id_condition
-            echo "<th> <input type='text' placeholder='$column[Field]' name='$column[Field]_condition'> </th>";
-          elseif ($column['Type'] == 'tinyint(1)')  //this is how we're storing booleans
-            echo "<th> <input type='checkbox' name='$column[Field]_condition'> </th>";
-          else
-            // in this case, the comparison operator (==, >, <, etc...) would be called columnName_condition, for example salary_condition.
-            // The value being compared against would be called columnName_quantity, for example, a query of (salary >= 9), would have
-            // $salary_condition = ">=" and $salary_quantity = 9
-            echo "<th class='numericQueryHeader'>
-                  <select class='operationList' name='$column[Field]_condition'>
-                    <option value='equal'>==</option>
-                    <option value='notEqual'>&#8800;</option>
-                    <option value='lessThan'>&lt;</option>
-                    <option value='greaterThan'>&gt;</option>
-                    <option value='lessThanOrEqual'>&le;</option>
-                    <option value='greaterThanOrEqual'>&ge;</option>
-                  </select>
-                  <input class='numberField' type='number' placeholder='$column[Field]' name='$column[Field]_quantity'>
-                </th>";
-        }
-
+        foreach ($columnNames as $column)
+          echo "<th>$column[Field]</th>";
         ?>
-        <th>
-          <button name="clear" type="reset" value="clear">Clear</button>
-          <button name="query" type="submit" value="query">Query</button>
-        </th>
-
-        <?php
-        // if the query button was clicked, go through all the columns and build a query (for example I used a text/VARCHAR column)
-        if (isset($_GET['query'])) {
-          $condition = ""; //changed $query to $condition since these need to be 2 seperate variables
-          foreach ($columnNames as $column) {
-            if (isset($_GET["$column[Field]_condition"])) {
-              if ($column['Type'] == 'varchar(30)' or $column['Type'] == 'varchar(50)' or $column['Type'] == 'varchar(100)')
-                $condition = $condition . $column['Field'] . " LIKE " . $_GET["$column[Field]_condition"] . " AND ";
-              else if ($column['Type'] == 'tinyint(1)')
-                // this can be confusing, but it means (example column name isManager) "... isManager = TRUE AND "
-                $condition = $condition . $column['Field'] . " = " . "TRUE AND ";
-              else {
-                // since we can't use equal sign in the URL (it violates the rules because it would break the url)
-                // we use a simple switch statement to set the comparison operator
-                $operator = '=';
-                switch ($_GET["$column[Field]_condition"]) {
-                  case 'equal':
-                    break;
-                  case 'notEqual':
-                    $operator = '!=';
-                    break;
-                  case 'lessThan':
-                    $operator = '<';
-                    break;
-                  case 'greaterThan':
-                    $operator = '>';
-                    break;
-                  case 'lessThanOrEqual':
-                    $operator = '<=';
-                    break;
-                  case 'greaterThanOrEqual':
-                    $operator = '>=';
-                    break;
-                }
-                // says (example column salary) "... salary > 9 AND "
-                $condition = $condition . $column['Field'] . $operator . $_GET["$column[Field]_quantity"] . " AND ";
-              }
-            }
-
-            // here we remove the last AND (last 5 characters)
-            substr($condition, 0, 5);
-            echo $condition;
-          }
-
-          // now run the query and get the new table (basically set new )
-        }
-        ?>
-      </form>
-    </thead>
-
-    <!-- for headers/column names -->
-    <thead>
-      <?php
-      foreach ($columnNames as $column)
-        echo "<th>$column[Field]</th>";
-      ?>
-    </thead>
-
-    <tbody>
+      </thead>
 
       <!-- for actual entries -->
-      <?php
-      $conn = mysqli_connect('localhost', 'root', '', 'entertainment'); //needs to be updated to the server
-      if (!$conn) {
-        echo 'Connection Error:' . mysqli_connect_error();
-      }
+      <tbody>
+        <?php
+        $query = "SELECT * FROM $_SESSION[table] ";
 
+        if (isset($_GET['query']) && $condition !== "") {
+          // build query here
+          $query .= "WHERE $condition";
+        }
 
-      $query = "SELECT * FROM $table"; //we're going to get rid of this line once we get the query working
-
-
-      if (isset($_GET['query'])) //it seems like this if statement is running even if no query is being made because there is a warning for line 218 being displayed
-        $query .= ' WHERE ';
-        $query .= $condition; //error: It seems that when the query button is pressed the page resets and prompts the user to input the table they want to view
-
-
-      if (isset($_GET['column'])) {
-          if ($_GET['sortType'] == "Ascending")
-            $query .= " ORDER BY $_GET[column] ASC";
+        if (isset($_SESSION['sortColumn'])) {
+          if ($_SESSION['sortType'] == "Ascending")
+            $query .= " ORDER BY $_SESSION[sortColumn] ASC";
           else
-            $query .= " ORDER BY $_GET[column] DESC";
-
+            $query .= " ORDER BY $_SESSION[sortColumn] DESC";
         }
 
-      echo ($query); //just gonna display the query for testing purposes
-      $result = mysqli_query($conn, $query);
-      $fetch = mysqli_fetch_all($result, MYSQLI_ASSOC);
-      $columnsResult = mysqli_query($conn, "SHOW COLUMNS FROM $table");
-      $columnNames = mysqli_fetch_all($columnsResult, MYSQLI_ASSOC);
-
-      // foreach entry
-      foreach ($fetch as $entry) {
-        echo "<tr>";
-
-        foreach ($columnNames as $column) {
-          echo "<td>" . htmlspecialchars($entry[$column['Field']]) . "</td>";
+        echo $query;
+        $result = mysqli_query($conn, $query);
+        // coludn't fix this bug for the life of me, so wrapped it in a try-catch block
+        try {
+          $fetch = mysqli_fetch_all($result, MYSQLI_ASSOC);
+          $columnsResult = mysqli_query($conn, "SHOW COLUMNS FROM $_SESSION[table]");
+          $columnNames = mysqli_fetch_all($columnsResult, MYSQLI_ASSOC);
+          $primaryKeyColumn = $columnNames[0]['Field'];
+          $primaryKeyValue = -1;
+        } catch (Exception) {
+          echo "pick new sort column";
         }
 
-        echo "<td>
-                <a href=''><img src='images/delete_icon.png' alt='delete_icon' class='icon'></a>
-                <a href=''><img src='images/edit_icon.jpg' alt='edit_icon' class='icon'></a>
-              </td>
-            </tr>";
-      }
-
-      mysqli_free_result($result);
-      mysqli_close($conn);
-      ?>
-
-    </tbody>
-
-    <tfoot>
-      <tr>
-        <form action="employee.php" method="POST">
-          <?php
+        foreach ($fetch as $entry) {
+          echo "<tr>";
+          $primaryKeyValue = $entry[$primaryKeyColumn];
 
           foreach ($columnNames as $column) {
-            if ($column['Type'] == 'varchar(30)' or $column['Type'] == 'varchar(50)' or $column['Type'] == 'varchar(100)')  //if we're storing strings any other way add them here
-              echo "<td> <input type='text' placeholder='$column[Field]' id='$column[Field]'> </td>";
-            elseif ($column['Type'] == 'tinyint(1)')  //this is how we're storing booleans
-              echo "<td> <input type='checkbox' id='$column[Field]'> </td>";
-            else
-              echo "<td> <input class='numberField' type='number' placeholder='$column[Field]' id='$column[Field]'> </td>";
+            echo "<td>" . htmlspecialchars($entry[$column['Field']]) . "</td>";
           }
+          echo "<td>
+                <form action='employee.php' method='POST' id='iconForm'>
+                  <input type='hidden' name='primaryKeyColumn' value='$primaryKeyColumn'/>
+                  <input type='hidden' name='primaryKeyValue' value='$primaryKeyValue'/>
+                  <input type='hidden' name='delete' value='delete'/>
+                  <input type='image' src='images/delete_icon.png' alt='delete' class='icon'/>
+                </form>
 
+                <form action='update.php' method='POST' id='iconForm'>
+                  <input type='hidden' name='primaryKeyColumn' value='$primaryKeyColumn'/>
+                  <input type='hidden' name='primaryKeyValue' value='$primaryKeyValue'/>
+                  <input type='hidden' name='table' value='$_SESSION[table]'/>
+                <input type='image' src='images/update_icon.jpg' class='icon' name='update' value='update'/>
+                </form>
+
+              </td>
+            </tr>";
+        }
+
+        if (isset($_POST["delete"]))
+          mysqli_query($conn, "DELETE FROM $_SESSION[table] WHERE $primaryKeyColumn = $primaryKeyValue");
+        ?>
+
+      </tbody>
+
+      <tfoot>
+        <tr>
+          <form action="employee.php" method="POST" id="insertForm">
+            <?php
+            foreach ($columnNames as $column)
+              insertInputs($column);
+            ?>
+
+            <td><button type="submit" name="insert">Insert record</button></td>
+          </form>
+
+          <?php
+          if (isset($_POST['insert'])) {
+            $newEntry = "(";
+            foreach ($columnNames as $column) {
+              $value = $_POST["$column[Field]_insert"];
+              if (isset($value) && $value == "on")
+                $newEntry .= '1';
+              else if ($value !== "")
+                $newEntry .= $value;
+              else
+                $newEntry .= "DEFAULT";
+
+              $newEntry .= ", ";
+            }
+            $newEntry = substr($newEntry, 0, -2) . ")";
+
+            $insertQuery = "INSERT INTO $_SESSION[table] VALUES $newEntry";
+            mysqli_query($conn, $insertQuery);
+          }
           ?>
-          <td><button type="submit">Insert record</button></td>
-        </form>
 
-      </tr>
-    </tfoot>
-  </table>
-<?php } ?>
+        </tr>
+      </tfoot>
+    </table>
+    <a href="bottom"></a>
 </body>
 
-<!-- notice that there are some repeated parts and there is
-probably a way to extract that into some sort of function
-in php (possibly into another php file and then #include at the top) -->
-
 </html>
+
+<?php
+  }
+  mysqli_free_result($result);
+  mysqli_close($conn);
+?>
