@@ -1,12 +1,12 @@
 -> get sortby column and sortType		DONE
--> get the sorting working on the website DONE
+-> get the sorting working on the website 	DONE
 -> get query values				DONE
--> get the queries working on the website BUGGED
+-> get the queries working on the website 	DONE
 -> get the table to display			DONE
--> insert new record funtion
--> edit record function
--> delete record function
--> make table queries apply on-screen
+-> insert new record funtion			ALMOST
+-> edit record function				ALMOST
+-> delete record function			DONE
+-> make table queries apply on-screen		DONE
 -> styling
 -> testing
 -> video
