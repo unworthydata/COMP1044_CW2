@@ -145,14 +145,14 @@ if (isset($_GET['tables'])){ ?>
         <?php
         // if the query button was clicked, go through all the columns and build a query (for example I used a text/VARCHAR column)
         if (isset($_GET['query'])) {
-          $query = "SELECT * FROM $table WHERE ";
+          $condition = ""; //changed $query to $condition since these need to be 2 seperate variables
           foreach ($columnNames as $column) {
             if (isset($_GET["$column[Field]_condition"])) {
               if ($column['Type'] == 'varchar(30)' or $column['Type'] == 'varchar(50)' or $column['Type'] == 'varchar(100)')
-                $query = $query . $column['Field'] . " LIKE " . $_GET["$column[Field]_condition"] . " AND ";
+                $condition = $condition . $column['Field'] . " LIKE " . $_GET["$column[Field]_condition"] . " AND ";
               else if ($column['Type'] == 'tinyint(1)')
                 // this can be confusing, but it means (example column name isManager) "... isManager = TRUE AND "
-                $query = $query . $column['Field'] . " = " . "TRUE AND ";
+                $condition = $condition . $column['Field'] . " = " . "TRUE AND ";
               else {
                 // since we can't use equal sign in the URL (it violates the rules because it would break the url)
                 // we use a simple switch statement to set the comparison operator
@@ -177,13 +177,13 @@ if (isset($_GET['tables'])){ ?>
                     break;
                 }
                 // says (example column salary) "... salary > 9 AND "
-                $query = $query . $column['Field'] . $operator . $_GET["$column[Field]_quantity"] . " AND ";
+                $condition = $condition . $column['Field'] . $operator . $_GET["$column[Field]_quantity"] . " AND ";
               }
             }
 
             // here we remove the last AND (last 5 characters)
-            substr($query, 0, 5);
-            echo $query;
+            substr($condition, 0, 5);
+            echo $condition;
           }
 
           // now run the query and get the new table (basically set new )
@@ -209,27 +209,24 @@ if (isset($_GET['tables'])){ ?>
         echo 'Connection Error:' . mysqli_connect_error();
       }
 
-      if (isset($_GET['query']))
-        $result = mysqli_query($conn, $query);
-      else
-        $result = mysqli_query($conn, "SELECT * FROM $table");
 
-//this is where im going to put the sort stuff since all of it is gonna be concatenated to the end of the query
-      if (isset($_GET['sortType'])) {
-          $conn = mysqli_connect('localhost', 'root', '', 'entertainment'); //host, username, password, databasename
-          if (!$conn)  //if the connection has failed (is false):
-            echo 'Connection Error:' . mysqli_connect_error();
+      $query = "SELECT * FROM $table"; //we're going to get rid of this line once we get the query working
 
-          $query = "SELECT * FROM $table ORDER BY $_GET[column] "; //we're going to get rid of this line once we get the query working
 
+      if (isset($_GET['query'])) //it seems like this if statement is running even if no query is being made because there is a warning for line 218 being displayed
+        $query .= ' WHERE ';
+        $query .= $condition; //error: It seems that when the query button is pressed the page resets and prompts the user to input the table they want to view
+
+
+      if (isset($_GET['column'])) {
           if ($_GET['sortType'] == "Ascending")
-            $query .= "ASC";
+            $query .= " ORDER BY $_GET[column] ASC";
           else
-            $query .= "DESC";
-          echo ($query); //just gonna display the query one last time
+            $query .= " ORDER BY $_GET[column] DESC";
+
         }
 
-
+      echo ($query); //just gonna display the query for testing purposes
       $result = mysqli_query($conn, $query);
       $fetch = mysqli_fetch_all($result, MYSQLI_ASSOC);
       $columnsResult = mysqli_query($conn, "SHOW COLUMNS FROM $table");
