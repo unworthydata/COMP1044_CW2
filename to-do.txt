@@ -1,5 +1,7 @@
 -> get sortby column and sortType		DONE
+-> get the sorting working on the website DONE
 -> get query values				DONE
+-> get the queries working on the website BUGGED
 -> get the table to display			DONE
 -> insert new record funtion
 -> edit record function
