@@ -22,16 +22,22 @@ function queryInputs($column)
 			</th>";
 }
 
-function insertInputs($column)
+function insertInputs($column, $primaryKeyColumn, $lastPrimaryKeyValue)
 {
-	if ($column['Type'] == 'varchar(30)' or $column['Type'] == 'varchar(50)' or $column['Type'] == 'varchar(100)' or $column['Type'] == 'varchar(255)')
-		echo "<td> <input type='text' placeholder='$column[Field]' name='$column[Field]_insert'> </td>";
-	elseif ($column['Type'] == 'tinyint(1)')
-		echo "<td> <input type='checkbox' name='$column[Field]_insert'> </td>";
-	elseif ($column['Type'] == 'datetime')
-		echo "<td> <input type='date' name='$column[Field]_insert'> </td>";
-	else
-		echo "<td> <input class='numberField' type='number' placeholder='$column[Field]' name='$column[Field]_insert'> </td>";
+	if ($column['Field'] == $primaryKeyColumn) {
+		$newID = (int) $lastPrimaryKeyValue + 1;
+		echo "<td> <input type='number' class='numberField' value='$newID' name='$column[Field]_insert' readonly> </td>";
+	} else {
+		if ($column['Type'] == 'varchar(30)' or $column['Type'] == 'varchar(50)' or $column['Type'] == 'varchar(100)' or $column['Type'] == 'varchar(255)')
+			echo "<td> <input type='text' placeholder='$column[Field]' name='$column[Field]_insert'> </td>";
+		elseif ($column['Type'] == 'tinyint(1)')
+			echo "<td> <input type='checkbox' name='$column[Field]_insert'> </td>";
+		elseif ($column['Type'] == 'datetime') {
+			$currDateTime = date('Y-m-d') . 'T' . date('H:i:s');
+			echo "<td> <input type='datetime-local' name='$column[Field]_insert' value='$currDateTime' readonly> </td>";
+		} else
+			echo "<td> <input class='numberField' type='number' placeholder='$column[Field]' name='$column[Field]_insert'> </td>";
+	}
 }
 
 function updateInputs($column, $currentValue)
@@ -42,9 +48,10 @@ function updateInputs($column, $currentValue)
 		echo "<input type='text' value='$currentValue' name='$column[Field]_update'>";
 	elseif ($column['Type'] == 'tinyint(1)')
 		echo "<input type='checkbox' name='$column[Field]_update' value='$currentValue'>";
-	elseif ($column['Type'] == 'datetime')
-		echo "<input type='date' name='$column[Field]_condition' value='$currentValue'>";
-	else
+	elseif ($column['Type'] == 'datetime') {
+		$currDateTime = date('Y-m-d') . 'T' . date('H:i:s');
+		echo "<input type='datetime-local' name='$column[Field]_condition' value='$currDateTime' readonly>";
+	} else
 		echo "<input class='numberField' type='number' value='$currentValue' name='$column[Field]_update'>";
 	echo "</fieldset>";
 }

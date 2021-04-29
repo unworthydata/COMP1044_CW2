@@ -13,11 +13,30 @@ if (isset($_GET['sortColumn']))
 if (isset($_GET['sortType']))
   $_SESSION['sortType'] = $_GET['sortType'];
 
-if (isset($_POST['delete']))
-  $_SESSION['delete'] = $_POST['delete'];
+if (isset($_POST['delete'])) {
+  $result = mysqli_query($conn, "SHOW CREATE TABLE $_SESSION[table]");
+  $fetch = mysqli_fetch_all($result, MYSQLI_ASSOC);
 
-if (isset($_POST['update']))
-  echo "update message";
+  // All the tables in our database have the ON DELETE constraint set to RESTRICT.
+  // It follows that if a table has a foreign key, its rows can't be deleted.
+  //
+  // To check if a table has foreign key references we run the above query.
+  // The MySQL query returns one row with two columns,
+  // first column is labelled 'Table' and contains the table name,
+  // while the second column is laelled 'Create Table' and 
+  // contains the actual code written to create the table.
+  //
+  // (although the code is slightly altered after it passes through the 
+  // compiler, it is mostly the same and will work for our current purpose)
+  if (!strpos($fetch[0]['Create Table'], 'FOREIGN KEY')) {
+    // for debugging:
+    // echo "<br> DELETE: " . "DELETE FROM $_SESSION[table] WHERE $_POST[primaryKeyColumn] = $_POST[primaryKeyValue]";
+    mysqli_query($conn, "DELETE FROM $_SESSION[table] WHERE $_POST[primaryKeyColumn] = $_POST[primaryKeyValue]");
+  } else
+    echo "<script type='text/javascript'> alert('Cannot delete the specified row, it is a child row with a foreign key reference'); </script>";
+
+  unset($_POST['delete']);
+}
 ?>
 
 <!DOCTYPE html>
@@ -27,6 +46,11 @@ if (isset($_POST['update']))
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <?php
+  // reload page after an insert to see changes (doesn't work)
+  if (isset($_POST['afterInsert']))
+    echo "<meta http-equiv='refresh' content='0; URL=employee.php' />";
+  ?>
   <title>Webflix - Employee Portal</title>
   <link rel="stylesheet" href="styles/normalise.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.4.1/milligram.css">
@@ -131,13 +155,13 @@ if (isset($_POST['update']))
       <thead>
         <?php
         $loop = 0;
-        foreach ($columnNames as $column){
-        if ($loop == 0){ //the first column of every table should be the default we sort by (not the prettiest fix but hey it works)
-          $_SESSION[sortColumn] = $column['Field'];
-          $loop += 1;
+        foreach ($columnNames as $column) {
+          if ($loop == 0) { //the first column of every table should be the default we sort by (not the prettiest fix but hey it works)
+            $_SESSION['sortColumn'] = $column['Field'];
+            $loop += 1;
+          }
+          echo "<th>$column[Field]</th>";
         }
-        echo "<th>$column[Field]</th>";
-      }
         ?>
       </thead>
 
@@ -161,11 +185,11 @@ if (isset($_POST['update']))
         echo $query;
         $result = mysqli_query($conn, $query);
 
-          $fetch = mysqli_fetch_all($result, MYSQLI_ASSOC);
-          $columnsResult = mysqli_query($conn, "SHOW COLUMNS FROM $_SESSION[table]");
-          $columnNames = mysqli_fetch_all($columnsResult, MYSQLI_ASSOC);
-          $primaryKeyColumn = $columnNames[0]['Field'];
-          $primaryKeyValue = -1;
+        $fetch = mysqli_fetch_all($result, MYSQLI_ASSOC);
+        $columnsResult = mysqli_query($conn, "SHOW COLUMNS FROM $_SESSION[table]");
+        $columnNames = mysqli_fetch_all($columnsResult, MYSQLI_ASSOC);
+        $primaryKeyColumn = $columnNames[0]['Field'];
+        $primaryKeyValue = -1;
 
         foreach ($fetch as $entry) {
           echo "<tr>";
@@ -175,12 +199,6 @@ if (isset($_POST['update']))
             echo "<td>" . htmlspecialchars($entry[$column['Field']]) . "</td>";
           }
           echo "<td>
-                <form action='employee.php' method='POST' id='iconForm'>
-                  <input type='hidden' name='primaryKeyColumn' value='$primaryKeyColumn'/>
-                  <input type='hidden' name='primaryKeyValue' value='$primaryKeyValue'/>
-                  <input type='hidden' name='delete' value='delete'/>
-                  <input type='image' src='images/delete_icon.png' alt='delete' class='icon'/>
-                </form>
 
                 <form action='update.php' method='POST' id='iconForm'>
                   <input type='hidden' name='primaryKeyColumn' value='$primaryKeyColumn'/>
@@ -189,13 +207,15 @@ if (isset($_POST['update']))
                 <input type='image' src='images/update_icon.jpg' class='icon' name='update' value='update'/>
                 </form>
 
+                <form action='employee.php' method='POST' id='iconForm'>
+                  <input type='hidden' name='primaryKeyColumn' value='$primaryKeyColumn'/>
+                  <input type='hidden' name='primaryKeyValue' value='$primaryKeyValue'/>
+                  <input type='hidden' name='delete' value='delete'/>
+                  <input type='image' src='images/delete_icon.png' alt='delete' class='icon'/>
+                </form>
+
               </td>
             </tr>";
-        }
-
-        if (isset($_POST["delete"])){
-          echo "DELETE FROM $_SESSION[table] WHERE $primaryKeyColumn = $primaryKeyValue";
-          //mysqli_query($conn, "DELETE FROM $_SESSION[table] WHERE $primaryKeyColumn = $primaryKeyValue");
         }
         ?>
 
@@ -203,10 +223,16 @@ if (isset($_POST['update']))
 
       <tfoot>
         <tr>
-          <form action="employee.php" method="POST" id="insertForm">
+          <form action="employee.php" method="POST" name="afterInsert" id="insertForm">
             <?php
-            foreach ($columnNames as $column)
-              insertInputs($column);
+            // get last ID in table
+            $result = mysqli_query($conn, "SELECT * FROM $_SESSION[table] ORDER BY $primaryKeyColumn DESC LIMIT 1");
+            $fetch = mysqli_fetch_all($result, MYSQLI_ASSOC);
+            $lastPrimaryKeyValue = $fetch[0][$primaryKeyColumn];
+
+            foreach ($columnNames as $column) {
+              insertInputs($column, $primaryKeyColumn, $lastPrimaryKeyValue);
+            }
             ?>
 
             <td><button type="submit" name="insert">Insert record</button></td>
@@ -214,24 +240,38 @@ if (isset($_POST['update']))
 
           <?php
           if (isset($_POST['insert'])) {
-            $newEntry = "(";
-            foreach ($columnNames as $column) {
-              if (!$column['Field'] == 'active'){ //if it's not the checkbox since $active_insert is not a variable that exists since it's not a textbox
-                $value = $_POST["$column[Field]_insert"];
-                if (isset($value) && $value == "on")
-                  $newEntry .= '1';
-                else if ($value !== "")
-                  $newEntry .= $value;
-                else
-                  $newEntry .= "DEFAULT";
-                }else{ //if it is the checkbox
-                  //idk how to refer to the checbox here but you would do that manually since you know that ONLY the SMALLINT values go here
-                }
-              $newEntry .= ", ";
-            }
-            $newEntry = substr($newEntry, 0, -2) . ")";
+            $values = "(";
 
-            $insertQuery = "INSERT INTO $_SESSION[table] VALUES $newEntry";
+            foreach ($columnNames as $column) {
+              if (
+                isset($_POST["$column[Field]_insert"]) &&
+                $_POST["$column[Field]_insert"] !== ""
+              ) {
+
+                $newField = $_POST["$column[Field]_insert"];
+
+                if ($newField == "on")
+                  $values .= 1;
+                else if ($column['Type'] == 'int(11)')
+                  $values .= "$newField";
+                else if ($column['Type'] == 'datetime') {
+                  $datetime = date('Y-m-d H:i:s');
+                  $values .= "'$datetime'";
+                } else
+                  $values .= "'$newField'";
+              } else
+                $values .= "DEFAULT";
+
+              $values .= ", ";
+            }
+
+            // remove trailing comma and space
+            $values = substr($values, 0, -2) . ")";
+
+            $insertQuery = "INSERT INTO $_SESSION[table] VALUES $values";
+
+            // for debugging:
+            // echo "<br> INSERT: " . $insertQuery;
             mysqli_query($conn, $insertQuery);
           }
           ?>
