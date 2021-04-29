@@ -1,7 +1,7 @@
 <?php
 function queryInputs($column)
 {
-	if ($column['Type'] == 'varchar(30)' or $column['Type'] == 'varchar(50)' or $column['Type'] == 'varchar(100)')
+	if ($column['Type'] == 'varchar(30)' or $column['Type'] == 'varchar(50)' or $column['Type'] == 'varchar(100)' or $column['Type'] == 'varchar(255)')
 		echo "<th> <input type='text' placeholder='$column[Field]' name='$column[Field]_condition'> </th>";
 	elseif ($column['Type'] == 'tinyint(1)')  //this is how we're storing booleans
 		echo "<th> <input type='checkbox' name='$column[Field]_condition'> </th>";
@@ -24,7 +24,7 @@ function queryInputs($column)
 
 function insertInputs($column)
 {
-	if ($column['Type'] == 'varchar(30)' or $column['Type'] == 'varchar(50)' or $column['Type'] == 'varchar(100)')
+	if ($column['Type'] == 'varchar(30)' or $column['Type'] == 'varchar(50)' or $column['Type'] == 'varchar(100)' or $column['Type'] == 'varchar(255)')
 		echo "<td> <input type='text' placeholder='$column[Field]' name='$column[Field]_insert'> </td>";
 	elseif ($column['Type'] == 'tinyint(1)')
 		echo "<td> <input type='checkbox' name='$column[Field]_insert'> </td>";
@@ -38,7 +38,7 @@ function updateInputs($column, $currentValue)
 {
 	echo "<fieldset>
 			<label>$column[Field]</label>";
-	if ($column['Type'] == 'varchar(30)' or $column['Type'] == 'varchar(50)' or $column['Type'] == 'varchar(100)')
+	if ($column['Type'] == 'varchar(30)' or $column['Type'] == 'varchar(50)' or $column['Type'] == 'varchar(100)' or $column['Type'] == 'varchar(255)')
 		echo "<input type='text' value='$currentValue' name='$column[Field]_update'>";
 	elseif ($column['Type'] == 'tinyint(1)')
 		echo "<input type='checkbox' name='$column[Field]_update' value='$currentValue'>";

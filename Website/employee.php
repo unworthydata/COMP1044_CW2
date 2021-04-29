@@ -93,6 +93,12 @@ if (isset($_POST['update']))
 
       <div>
         <a class="button" href="#bottom" id="insertRef">Insert a new entry</a>
+        <?php
+        /*This will be some code that *might* scroll you to the bottom of the page which should be ran when the button is pressed
+        <script>
+        var element = document.getElementByID("separator")
+        element.scrollTop = 9999999999 //just some big number that represents how my pixels we'll be scrolling down
+      </script>*/ ?>
       </div>
 
     </fieldset>
@@ -124,8 +130,14 @@ if (isset($_POST['update']))
       <!-- for headers/column names -->
       <thead>
         <?php
-        foreach ($columnNames as $column)
-          echo "<th>$column[Field]</th>";
+        $loop = 0;
+        foreach ($columnNames as $column){
+        if ($loop == 0){ //the first column of every table should be the default we sort by (not the prettiest fix but hey it works)
+          $_SESSION[sortColumn] = $column['Field'];
+          $loop += 1;
+        }
+        echo "<th>$column[Field]</th>";
+      }
         ?>
       </thead>
 
@@ -148,16 +160,12 @@ if (isset($_POST['update']))
 
         echo $query;
         $result = mysqli_query($conn, $query);
-        // coludn't fix this bug for the life of me, so wrapped it in a try-catch block
-        try {
+
           $fetch = mysqli_fetch_all($result, MYSQLI_ASSOC);
           $columnsResult = mysqli_query($conn, "SHOW COLUMNS FROM $_SESSION[table]");
           $columnNames = mysqli_fetch_all($columnsResult, MYSQLI_ASSOC);
           $primaryKeyColumn = $columnNames[0]['Field'];
           $primaryKeyValue = -1;
-        } catch (Exception) {
-          echo "pick new sort column";
-        }
 
         foreach ($fetch as $entry) {
           echo "<tr>";
@@ -185,8 +193,10 @@ if (isset($_POST['update']))
             </tr>";
         }
 
-        if (isset($_POST["delete"]))
-          mysqli_query($conn, "DELETE FROM $_SESSION[table] WHERE $primaryKeyColumn = $primaryKeyValue");
+        if (isset($_POST["delete"])){
+          echo "DELETE FROM $_SESSION[table] WHERE $primaryKeyColumn = $primaryKeyValue";
+          //mysqli_query($conn, "DELETE FROM $_SESSION[table] WHERE $primaryKeyColumn = $primaryKeyValue");
+        }
         ?>
 
       </tbody>
@@ -206,14 +216,17 @@ if (isset($_POST['update']))
           if (isset($_POST['insert'])) {
             $newEntry = "(";
             foreach ($columnNames as $column) {
-              $value = $_POST["$column[Field]_insert"];
-              if (isset($value) && $value == "on")
-                $newEntry .= '1';
-              else if ($value !== "")
-                $newEntry .= $value;
-              else
-                $newEntry .= "DEFAULT";
-
+              if (!$column['Field'] == 'active'){ //if it's not the checkbox since $active_insert is not a variable that exists since it's not a textbox
+                $value = $_POST["$column[Field]_insert"];
+                if (isset($value) && $value == "on")
+                  $newEntry .= '1';
+                else if ($value !== "")
+                  $newEntry .= $value;
+                else
+                  $newEntry .= "DEFAULT";
+                }else{ //if it is the checkbox
+                  //idk how to refer to the checbox here but you would do that manually since you know that ONLY the SMALLINT values go here
+                }
               $newEntry .= ", ";
             }
             $newEntry = substr($newEntry, 0, -2) . ")";

@@ -12,3 +12,18 @@ DONE -> make table queries apply on-screen
 -> styling
 -> testing
 -> video
+
+
+In update.php, when you try to update a field with DATETIME, the value is not actually updated (i think the value should just default to the current timestamp and not give the user an option to update it. If we go with this, should be an easy fix where we just put in an if statement to check if the type is of DATETIME and if it is just set it to default where the default is CURRENTTIME
+In update.php, pressing the submit button should redirect the user back to Employee. (just a basic thing)
+QueryBuilder not working (Condition is returned as an empty string) (just added return $condition and now works but the DATETIME fields are automatically added to the query which messes up the query and returns nothing) (UPDATE fixed Querybuilder by removing the ability to query for DATETIME type columns but all VARCHAR queries now don't seem to be working)
+clear button not working (Should just remake the generic SELECT * FROM $TABLE ORDER BY $COLUMNAME $ORDER) but i don't know how the button stuff works especially with CSS
+
+added  $column['Type'] == 'varchar(255)' to the if statements since that is a string type that wasn't included previously and broke the textboxes with that datatype
+Inserting does not work for tables with TINYINT values as it returns an error(most likely due to it being a checkbox instead of a text box)
+Inserting does not work in general (probably due to the DATETIME fields but i think those should just default to the current timestamp and not give the user an option to specify it especially since DATETIME takes in a timestamp and the user can't select a timestamp)
+It seems that regardless of which button you end up clicking when trying to delete a record it tries (and fails since i've commented it out) to delete the record with the highest primary key value (the last record in the table) it's probably just a loop thing
+
+Fixed sort error when switching tables. Now only visual bug that needs to be fixed
+
+Potential solution for Insert New Record Button. See line 97 of employee.php
