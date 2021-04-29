@@ -13,7 +13,7 @@ DONE -> make table queries apply on-screen
 -> testing
 -> video
 
-
+UPDATE 1:
 In update.php, when you try to update a field with DATETIME, the value is not actually updated (i think the value should just default to the current timestamp and not give the user an option to update it. If we go with this, should be an easy fix where we just put in an if statement to check if the type is of DATETIME and if it is just set it to default where the default is CURRENTTIME
 In update.php, pressing the submit button should redirect the user back to Employee. (just a basic thing)
 QueryBuilder not working (Condition is returned as an empty string) (just added return $condition and now works but the DATETIME fields are automatically added to the query which messes up the query and returns nothing) (UPDATE fixed Querybuilder by removing the ability to query for DATETIME type columns but all VARCHAR queries now don't seem to be working)
@@ -27,3 +27,7 @@ It seems that regardless of which button you end up clicking when trying to dele
 Fixed sort error when switching tables. Now only visual bug that needs to be fixed
 
 Potential solution for Insert New Record Button. See line 97 of employee.php
+
+
+UPDATE 2:
+QueryBuilder now fully working.

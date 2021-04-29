@@ -3,22 +3,21 @@ function buildQuery($columnNames, $getArray)
 {
 	$condition = "";
 	foreach ($columnNames as $column) {
-		if ($column['Type'] !== 'datetime'){
 			if (isset($_GET["$column[Field]_condition"])) {
 				$comparison = trim($getArray["$column[Field]_condition"]);
 
-				if ( //it seems like this condition does not run but the WHERE condition is still added onto the SQL
+				if ($comparison !== '' &&
 					($column['Type'] == 'varchar(30)' ||
 						$column['Type'] == 'varchar(50)' ||
 						$column['Type'] == 'varchar(100)') ||
-						$column['Type'] == 'varchar(255)' &&
-					$comparison !== ""
+						$column['Type'] == 'varchar(255)'
+						 //it seems like this condition is failing
 				){
 					$condition = $condition . $column['Field'] . " LIKE " . "'$comparison'" . " AND ";
 				}
 				else if ($column['Type'] == 'tinyint(1)')
 					$condition = $condition . $column['Field'] . " = " . "TRUE AND ";
-				else if ($column['Type'] == 'datetime') {
+				else if ($column['Type'] == 'datetime' && $comparison !== '') {
 					$condition = $condition . $column['Field'] . " = " . "'$comparison' AND ";
 				} else {
 					if (isset($_GET["$column[Field]_quantity"])) {
@@ -47,7 +46,8 @@ function buildQuery($columnNames, $getArray)
 				}
 			}
 	}
-	$condition = substr($condition, 0, -5);
+	if ($condition !== ''){
+		$condition = substr($condition, 0, -5); //if you do this while $condition is '' it no longer becomes '' according to PHP
+	}
 	return $condition;
-}
 }
