@@ -4,8 +4,7 @@
 if (!isset($_COOKIE['loggedIn']) || $_COOKIE['loggedIn'] != "true") {
   $message = "Not logged in!\nRedirecting to login page...";
   echo "<script>alert($message);</script>";
-  header("Location: login.php") or die();
-  exit();
+  echo "<meta http-equiv='refresh' content='0; URL=login.php' />";
 }
 
 session_start();

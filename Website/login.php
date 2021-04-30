@@ -5,11 +5,8 @@ The employee.php file always checks if the user is logged in first, so any malic
 include 'connection.php';
 
 // user is logged in
-if (isset($_COOKIE['loggedIn']) && $_COOKIE['loggedIn'] == "true") {
-	header("Location: employee.php") or die();
-	exit();
-}
-
+if (isset($_COOKIE['loggedIn']) && $_COOKIE['loggedIn'] == "true")
+	echo "<meta http-equiv='refresh' content='0; URL=employee.php' />";
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -26,8 +23,7 @@ if (isset($_COOKIE['loggedIn']) && $_COOKIE['loggedIn'] == "true") {
 		if (count($fetch) == 1) {
 			// setcookie(name, value, expire, path, domain, secure, httponly);
 			setcookie("loggedIn", "true", time() + 86400, "/"); // expires after 1 day (time() + 24 hrs * 3600 seconds an hr)
-			header("Location: employee.php") or die();
-			exit();
+			echo "<meta http-equiv='refresh' content='0; URL=employee.php' />";
 		} else
 			echo "<script>alert('Invalid username or password');</script>";
 	}
