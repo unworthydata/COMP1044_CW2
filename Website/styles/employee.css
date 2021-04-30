@@ -1,5 +1,6 @@
 table {
-  width: 100vw;
+  width: 100%;
+  margin: 0;
 }
 
 td,
@@ -29,14 +30,26 @@ input[type="number"] {
   margin: 0px 10px;
 }
 
+.numericQueryHeader {
+  width: 11%;
+}
+
+.headerParent {
+  display: flex;
+  flex-direction: column;
+}
+
+.table-container {
+  padding: 10px;
+  border: 1px solid #aaa;
+  border-radius: 10px;
+  margin: 20px;
+}
+
 #iconForm {
   display: inline-block;
   margin: 0;
   padding: 0;
-}
-
-.numericQueryHeader {
-  width: 11%;
 }
 
 #separator {
@@ -45,8 +58,15 @@ input[type="number"] {
   height: 1px;
 }
 
-.siderbarButtons {
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-end;
+#rightHeaderChild {
+  position: absolute;
+  align-self: flex-end;
+}
+
+#rightHeaderChild * {
+  width: 100%;
+}
+
+#insert-row > * {
+  border-bottom: 0;
 }

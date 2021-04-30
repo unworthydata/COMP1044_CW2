@@ -1,5 +1,5 @@
-<!-- the way this works is that you need to enter the correct info and only then you will be given access to the employee.php file
-the employee.php file is one level above, so any malicious actors cannot access it without going through the login first -->
+<!-- the way this works is that you need to enter the correct info and only then you will be given access to the employee.php file.
+The employee.php file always checks if the user is logged in first, so any malicious actors cannot access it without going through the login page first -->
 
 <?php
 include 'connection.php';
@@ -35,18 +35,24 @@ if (isset($_COOKIE['loggedIn']) && $_COOKIE['loggedIn'] == "true") {
 	<title>Webflix - Login</title>
 	<link rel="stylesheet" href="styles/normalize.css" />
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.4.1/milligram.css" />
+	<link rel="stylesheet" href="styles/styles.css" />
+	<link rel="stylesheet" href="styles/login.css" />
 </head>
 
 <body>
-	<form action="login.php" method="POST">
-		<fieldset>
-			<label for="username">Username</label>
-			<input type="text" name="username" id="username" placeholder="Enter your username">
-			<label for="password">Password</label>
-			<input type="password" name="password" id="password" placeholder="Enter your password">
-			<input type="submit" value="Log in">
-		</fieldset>
-	</form>
+	<div id="parent">
+		<form action="login.php" method="POST">
+			<fieldset>
+				<div id="child">
+					<label for="username">Username</label>
+					<input type="text" name="username" id="username" placeholder="Enter your username">
+					<label for="password">Password</label>
+					<input type="password" name="password" id="password" placeholder="Enter your password">
+				</div>
+				<input type="submit" value="Log in">
+			</fieldset>
+		</form>
+	</div>
 </body>
 
 </html>

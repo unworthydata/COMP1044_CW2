@@ -1,30 +1,69 @@
-::selection,
-:focus {
-  color: white;
-  background-color: black;
+@media (prefers-color-scheme: dark) {
+  @import url("https://fonts.googleapis.com/css2?family=Crimson+Pro");
+
+  body {
+    background-color: rgba(24, 26, 27, 255);
+    color: rgba(209, 209, 209, 255);
+  }
+
+  form {
+    color: rgba(209, 209, 209, 255);
+  }
+
+  input,
+  select,
+  textarea,
+  input[type="text"],
+  input[type="password"],
+  input[type="number"],
+  input[type="checkbox"],
+  input[type="datetime-local"],
+  input[type="date"] {
+    color: rgba(209, 209, 209, 255);
+    border-color: rgba(51, 56, 58, 255);
+  }
+
+  #update-icon {
+    background: url("../images/update_icon_dark.png");
+  }
+
+  .list,
+  select {
+    background-image: url("../images/arrow_dark.png");
+    background-size: 14px;
+    background-position: 93%;
+  }
+
+  .list:focus,
+  select:focus {
+    background-image: url("../images/arrow_dark_focus.png");
+    background-size: 14px;
+    background-position: 93%;
+  }
 }
 
-a.button1 {
-  display: inline-block;
-  padding: 0.35em 1.2em;
-  border: 0.1em solid red;
-  margin: 0 0.3em 0.3em 0;
-  border-radius: 0.12em;
-  box-sizing: border-box;
-  text-decoration: none;
-  font-family: "Roboto", sans-serif;
-  font-weight: 300;
+input:focus,
+textarea:focus,
+select:focus,
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="number"]:focus,
+input[type="checkbox"]:focus,
+input[type="datetime-local"]:focus,
+input[type="date"]:focus {
+  border-color: red;
   color: red;
-  text-align: center;
-  transition: all 0.2s;
+  background-image: red;
 }
-a.button1:hover {
-  color: whitesmoke;
+
+.button,
+button[type="submit"],
+input[type="submit"] {
   background-color: red;
+  border-color: red;
+  color: white;
 }
-@media all and (max-width: 30em) {
-  a.button1 {
-    display: block;
-    margin: 0.4em auto;
-  }
+
+#clear-button {
+  color: red;
 }
