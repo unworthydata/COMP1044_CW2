@@ -4,7 +4,8 @@
 if (!isset($_COOKIE['loggedIn']) || $_COOKIE['loggedIn'] != "true") {
   $message = "Not logged in!\nRedirecting to login page...";
   echo "<script>alert($message);</script>";
-  echo "<meta http-equiv='refresh' content='0; URL=login.php' />";
+  header("Location: login.php");
+  exit();
 }
 
 session_start();
@@ -20,11 +21,15 @@ if (isset($_POST['resetPage'])) {
   unset($_SESSION);
 }
 
-if (isset($_GET['table']))
-  $_SESSION['table'] = $_GET['table'];
-
 if (isset($_GET['sortColumn']))
   $_SESSION['sortColumn'] = $_GET['sortColumn'];
+
+if (isset($_GET['table'])) {
+  if ($_SESSION['table'] != $_GET['table'])
+    unset($_SESSION['sortColumn']);
+
+  $_SESSION['table'] = $_GET['table'];
+}
 
 if (isset($_GET['sortType']))
   $_SESSION['sortType'] = $_GET['sortType'];
@@ -126,9 +131,8 @@ if (isset($_SESSION['delete'])) {
           $columnNames = mysqli_fetch_all($result, MYSQLI_ASSOC);
 
           if (isset($_SESSION['sortColumn']))
-            echo "<option value=$_SESSION[sortColumn]>$_SESSION[sortColumn]</option>";
-          else
-            echo "<option value='' disabled selected>Select your option</option>";
+            echo "<option value=$_SESSION[sortColumn] selected>$_SESSION[sortColumn]</option>";
+
 
           foreach ($columnNames as $column)
             echo "<option value=$column[Field]>$column[Field]</option>";
@@ -187,10 +191,10 @@ if (isset($_SESSION['delete'])) {
           <?php
           $loop = 0;
           foreach ($columnNames as $column) {
-            if ($loop == 0) { //the first column of every table should be the default we sort by (not the prettiest fix but hey it works)
+            /* if ($loop == 0) { //the first column of every table should be the default we sort by (not the prettiest fix but hey it works)
               $_SESSION['sortColumn'] = $column['Field'];
               $loop += 1;
-            }
+            } */
             echo "<th>$column[Field]</th>";
           }
           // because we add one more column for the delete and update buttons,
@@ -206,6 +210,11 @@ if (isset($_SESSION['delete'])) {
             // build query here
             $query .= "WHERE $condition";
           }
+
+          if (!isset($_SESSION['sortColumn']))
+            $_SESSION['sortColumn'] = $columnNames[0]['Field'];
+
+
           if (isset($_SESSION['sortType'])) {
             if ($_SESSION['sortType'] == "Ascending")
               $query .= " ORDER BY $_SESSION[sortColumn] ASC";
@@ -224,12 +233,13 @@ if (isset($_SESSION['delete'])) {
             foreach ($columnNames as $column) {
               echo "<td>" . htmlspecialchars($entry[$column['Field']]) . "</td>";
             }
-            echo "<td class='icon-cell'>
+            echo "<td>
                   <form action='updater.php' method='POST' id='iconForm'>
                     <input type='hidden' name='primaryKeyColumn' value='$primaryKeyColumn'/>
                     <input type='hidden' name='primaryKeyValue' value='$primaryKeyValue'/>
                     <input type='hidden' name='table' value='$_SESSION[table]'/>
-                  <input type='image' src='images/update_icon.jpg' class='icon' name='update' value='update' id='update-icon'/>
+                    <input type='image' src='images/update_icon.jpg' class='icon' name='update' value='update' id='update-icon'/>
+                    <input type='image' src='images/update_icon_dark.png' class='icon' name='update' value='update' id='update-icon-dark'/>
                   </form>
                   <form action='employee.php' method='POST' id='iconForm'>
                     <input type='hidden' name='primaryKeyColumn' value='$primaryKeyColumn'/>

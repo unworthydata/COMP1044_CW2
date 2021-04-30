@@ -23,10 +23,6 @@
     border-color: rgba(51, 56, 58, 255);
   }
 
-  #update-icon {
-    background: url("../images/update_icon_dark.png");
-  }
-
   .list,
   select {
     background-image: url("../images/arrow_dark.png");

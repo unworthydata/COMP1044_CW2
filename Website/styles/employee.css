@@ -1,3 +1,25 @@
+#update-icon-dark {
+  display: none;
+}
+
+#update-icon {
+  display: initial;
+  width: 2rem;
+  margin: 0px 10px;
+}
+
+@media (prefers-color-scheme: dark) {
+  #update-icon-dark {
+    display: initial;
+    width: 2rem;
+    margin: 0px 10px;
+  }
+
+  #update-icon {
+    display: none;
+  }
+}
+
 table {
   width: 100%;
   margin: 0;
@@ -5,7 +27,6 @@ table {
 
 td,
 th {
-  max-width: 100%;
   padding-top: 10px;
   padding-right: 30px;
   padding-bottom: 10px;
@@ -45,12 +66,6 @@ input[type="number"] {
   border: 1px solid #aaa;
   border-radius: 10px;
   margin: 20px;
-  height: auto;
-  width: auto;
-}
-
-.icon-cell {
-  width: 50px;
 }
 
 #iconForm {
