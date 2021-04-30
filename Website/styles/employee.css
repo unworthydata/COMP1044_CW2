@@ -44,3 +44,9 @@ input[type="number"] {
   max-width: 100vw;
   height: 1px;
 }
+
+.siderbarButtons {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+}

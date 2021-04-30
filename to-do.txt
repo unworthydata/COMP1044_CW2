@@ -9,6 +9,9 @@ DONE AND TESTED -> delete record function
 DONE AND TESTED -> make table queries apply on-screen
 DONE AND TESTED -> fix top insert button (make it snap to the bottom)
 DONE AND TESTED -> fix intial query bug
+DONE AND TESTED -> login system
+-> mobile edit bug
+-> update report with login stuff
 -> styling
 -> testing
 -> video

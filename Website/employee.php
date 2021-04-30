@@ -1,8 +1,19 @@
 <?php
+
+if (!isset($_COOKIE['loggedIn']) || $_COOKIE['loggedIn'] != "true") {
+  $message = "Not logged in!\nRedirecting to login page...";
+  echo "<script>alert($message);</script>";
+  header("Location: login.php");
+  exit();
+}
+
 session_start();
 include 'inputFields.php';
 include 'connection.php';
 include 'queryBuilder.php';
+
+// password ok then ok
+// else redirect bacl 
 
 if (isset($_GET['table']))
   $_SESSION['table'] = $_GET['table'];
@@ -13,7 +24,11 @@ if (isset($_GET['sortColumn']))
 if (isset($_GET['sortType']))
   $_SESSION['sortType'] = $_GET['sortType'];
 
-if (isset($_POST['delete'])) {
+if (isset($_SESSION['delete'])) {
+  // in this case it is a duplicate POST request, so ignore and unset SESSION variable 'delete'
+  unset($_SESSION['delete']);
+} else if (isset($_POST['delete'])) {
+  $_SESSION['delete'] = $_POST['delete'];
   $result = mysqli_query($conn, "SHOW CREATE TABLE $_SESSION[table]");
   $fetch = mysqli_fetch_all($result, MYSQLI_ASSOC);
 
@@ -29,13 +44,22 @@ if (isset($_POST['delete'])) {
   // (although the code is slightly altered after it passes through the 
   // compiler, it is mostly the same and will work for our current purpose)
   if (!strpos($fetch[0]['Create Table'], 'FOREIGN KEY')) {
-    // for debugging:
-    // echo "<br> DELETE: " . "DELETE FROM $_SESSION[table] WHERE $_POST[primaryKeyColumn] = $_POST[primaryKeyValue]";
-    mysqli_query($conn, "DELETE FROM $_SESSION[table] WHERE $_POST[primaryKeyColumn] = $_POST[primaryKeyValue]");
+    echo "<script>
+            result = confirm('Are you sure you want to delete record with $_POST[primaryKeyColumn] = $_POST[primaryKeyValue] from table $_SESSION[table]?');
+          </script>";
+    $confirmation = "<script>document.writeln(result);</script>";
+    if ($confirmation == true) {
+      // for debugging:
+      // echo "<br> DELETE: " . "DELETE FROM $table WHERE $primaryKeyColumn = $_POST['primaryKeyValue']";
+      mysqli_query($conn, "DELETE FROM $_SESSION[table] WHERE $_POST[primaryKeyColumn] = $_POST[primaryKeyValue]");
+      // if an error message was thrown this means this was a parent row
+      if (mysqli_error($conn) !== "") {
+        $errorMessage = mysqli_error($conn);
+        echo "<script>alert('MySQL Error: $errorMessage');</script>";
+      }
+    }
   } else
     echo "<script type='text/javascript'> alert('Cannot delete the specified row, it is a child row with a foreign key reference'); </script>";
-
-  unset($_POST['delete']);
 }
 ?>
 
@@ -58,6 +82,13 @@ if (isset($_POST['delete'])) {
 </head>
 
 <body>
+  <div class="sidebarButtons">
+    <a href="index.html" class="button">Go to homepage</a>
+    <form action="employee.php" method="POST">
+      <input class="button button-outline" type="submit" name="resetPage" value="Reset Page">
+    </form>
+  </div>
+
   <form action="employee.php" method="GET">
     <fieldset>
 
@@ -117,12 +148,6 @@ if (isset($_POST['delete'])) {
 
       <div>
         <a class="button" href="#bottom" id="insertRef">Insert a new entry</a>
-        <?php
-        /*This will be some code that *might* scroll you to the bottom of the page which should be ran when the button is pressed
-        <script>
-        var element = document.getElementByID("separator")
-        element.scrollTop = 9999999999 //just some big number that represents how my pixels we'll be scrolling down
-      </script>*/ ?>
       </div>
 
     </fieldset>
@@ -175,16 +200,14 @@ if (isset($_POST['delete'])) {
           $query .= "WHERE $condition";
         }
 
-        if (isset($_SESSION['sortColumn'])) {
+        if (isset($_SESSION['sortType'])) {
           if ($_SESSION['sortType'] == "Ascending")
             $query .= " ORDER BY $_SESSION[sortColumn] ASC";
           else
             $query .= " ORDER BY $_SESSION[sortColumn] DESC";
         }
 
-        echo $query;
         $result = mysqli_query($conn, $query);
-
         $fetch = mysqli_fetch_all($result, MYSQLI_ASSOC);
         $columnsResult = mysqli_query($conn, "SHOW COLUMNS FROM $_SESSION[table]");
         $columnNames = mysqli_fetch_all($columnsResult, MYSQLI_ASSOC);
@@ -200,7 +223,7 @@ if (isset($_POST['delete'])) {
           }
           echo "<td>
 
-                <form action='update.php' method='POST' id='iconForm'>
+                <form action='updater.php' method='POST' id='iconForm'>
                   <input type='hidden' name='primaryKeyColumn' value='$primaryKeyColumn'/>
                   <input type='hidden' name='primaryKeyValue' value='$primaryKeyValue'/>
                   <input type='hidden' name='table' value='$_SESSION[table]'/>
@@ -211,7 +234,7 @@ if (isset($_POST['delete'])) {
                   <input type='hidden' name='primaryKeyColumn' value='$primaryKeyColumn'/>
                   <input type='hidden' name='primaryKeyValue' value='$primaryKeyValue'/>
                   <input type='hidden' name='delete' value='delete'/>
-                  <input type='image' src='images/delete_icon.png' alt='delete' class='icon'/>
+                  <input type='image' src='images/delete_icon.png' alt='delete' class='icon' name='delete' value='delete'/>
                 </form>
 
               </td>
@@ -279,7 +302,7 @@ if (isset($_POST['delete'])) {
         </tr>
       </tfoot>
     </table>
-    <a href="bottom"></a>
+    <a id="bottom"></a>
 </body>
 
 </html>
