@@ -65,6 +65,7 @@ $columnNames = mysqli_fetch_all($columnsResult, MYSQLI_ASSOC);
 	<title>Webflix - Employee Portal</title>
 	<link rel="stylesheet" href="styles/normalise.css">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.4.1/milligram.css">
+	<link rel="stylesheet" href="styles/styles.css">
 </head>
 
 <form action="update.php" method="POST" style="max-width: 300px;">
@@ -84,6 +85,4 @@ $columnNames = mysqli_fetch_all($columnsResult, MYSQLI_ASSOC);
 	<button type="submit" name="update" value="update">Update</button>
 </form>
 
-<form action="employee.php">
-	<button>Go back</button>
-</form>
+<a href="employee.php" class="button">Go back</a>
