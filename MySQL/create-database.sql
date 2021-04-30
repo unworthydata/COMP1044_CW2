@@ -170,7 +170,7 @@ CREATE TABLE customer (
   email VARCHAR(100),
   address_id INTEGER,
   active BOOLEAN NOT NULL DEFAULT 1,
-  create_date DATETIME NOT NULL DEFAULT (CURDATE()),
+  create_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   last_update DATETIME,
   
   CONSTRAINT customer_store_store_id
