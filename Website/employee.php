@@ -4,7 +4,7 @@
 if (!isset($_COOKIE['loggedIn']) || $_COOKIE['loggedIn'] != "true") {
   $message = "Not logged in!\nRedirecting to login page...";
   echo "<script>alert($message);</script>";
-  header("Location: login.php");
+  header("Location: login.php") or die();
   exit();
 }
 
@@ -225,7 +225,7 @@ if (isset($_SESSION['delete'])) {
             foreach ($columnNames as $column) {
               echo "<td>" . htmlspecialchars($entry[$column['Field']]) . "</td>";
             }
-            echo "<td>
+            echo "<td class='icon-cell'>
                   <form action='updater.php' method='POST' id='iconForm'>
                     <input type='hidden' name='primaryKeyColumn' value='$primaryKeyColumn'/>
                     <input type='hidden' name='primaryKeyValue' value='$primaryKeyValue'/>
